@@ -28,22 +28,21 @@ import { Demo_Options } from "../demo_options.mjs"
 class Curve
     extends luna.Container
 {
-    constructor()
+    constructor(radius, i, j)
     {
         super();
 
         //
         // Points
         this.points = [];
+        this.radius = radius;
 
         const angles_count = 360;
-        const radius       = 100;
-
         for(let degrees = 0; degrees < angles_count; ++degrees) {
             const radian = luna.Math_Utils.to_radians(degrees);
             const point  = luna.make_vec2(
-               radius * Math.cos(radian),
-               radius * Math.sin(radian),
+               this.radius * Math.cos(radian * (j + 1)),
+               this.radius * Math.sin(radian * (i + 1)),
             );
             this.points.push(point);
         }
@@ -52,7 +51,7 @@ class Curve
         // Graphics
         this.graphics = new PIXI.Graphics();
 
-        this.graphics.lineStyle(2, 0xFFFFFF, 1);
+        this.graphics.lineStyle(1, 0xFFFFFF, 1);
         this.graphics.beginFill(0, 0);
         this.graphics.drawPolygon(this.points);
         this.graphics.endFill();
@@ -71,10 +70,21 @@ export class Demo_Scene
     constructor()
     {
         super();
-        const curve = new Curve();
-        curve.x = 100;
-        curve.y = 100;
-        luna.Layout.add_to_parent(this, curve);
+
+        const size = luna.App.get_size();
+
+        const curves_count  = 10;
+        const curves_radius = 10;
+        const curves_size   = curves_radius * 2;
+        const gap           = 10;
+        for(let i = 0; i < curves_count; ++i) {
+            for(let j = 0; j < curves_count; ++j) {
+                const curve = new Curve(curves_radius, i, j);
+                curve.x =curves_radius + (i * curves_size) + (i * gap);
+                curve.y =curves_radius + (j * curves_size) + (j * gap);
+                luna.Layout.add_to_parent(this, curve);
+            }
+        }
     }
 
     //------------------------------------------------------------------------//
