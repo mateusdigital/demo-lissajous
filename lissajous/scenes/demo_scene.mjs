@@ -28,34 +28,76 @@ import { Demo_Options } from "../demo_options.mjs"
 class Curve
     extends luna.Container
 {
-    constructor(radius, i, j)
+    constructor(radius, ratio_1, ratio_2)
     {
         super();
 
         //
         // Points
-        this.points = [];
-        this.radius = radius;
-
-        const angles_count = 360;
-        for(let degrees = 0; degrees < angles_count; ++degrees) {
-            const radian = luna.Math_Utils.to_radians(degrees);
-            const point  = luna.make_vec2(
-               this.radius * Math.cos(radian * (j + 1)),
-               this.radius * Math.sin(radian * (i + 1)),
-            );
-            this.points.push(point);
-        }
+        this.radius  = radius;
+        this.size    = radius * 2;
+        this.ratio_1 = ratio_1;
+        this.ratio_2 = ratio_2;
 
         //
         // Graphics
-        this.graphics = new PIXI.Graphics();
+        this.canvas_buffer = luna.Canvas_Utils.create_with_size(this.size, this.size);
+        this.sprite        = luna.Sprite.from_canvas(this.canvas_buffer);
+        luna.Layout.add_to_parent(this, this.sprite);
 
-        this.graphics.lineStyle(1, 0xFFFFFF, 1);
-        this.graphics.beginFill(0, 0);
-        this.graphics.drawPolygon(this.points);
-        this.graphics.endFill();
-        luna.Layout.add_to_parent(this, this.graphics);
+        document.body.appendChild(this.canvas_buffer);
+    }
+
+    //--------------------------------------------------------------------------
+    _calculate_point_for_angle(angle)
+    {
+        const point = luna.make_vec2(
+            this.radius * Math.cos(angle * (this.ratio_1 + 1)),
+            this.radius * Math.sin(angle * (this.ratio_2 + 1)),
+        );
+
+        return point;
+    }
+
+   //---------------------------------------------------------------------------
+    draw_to_angle(angle, segments,  stroke_color = "white", stroke_width = 2)
+    {
+        const ctx = this.canvas_buffer.context_2d;
+        // ctx.save();
+
+        ctx.strokeStyle = stroke_color;
+        ctx.lineWidth   = stroke_width;
+
+        ctx.fillStyle = "blue";
+        ctx.fillRect(0, 0, this.size, this.size);
+        ctx.beginPath();
+
+        segments = 360;
+        const angle_offset = luna.HALF_PI;
+        const increment    = (luna.TWO_PI / segments);
+        const target_angle = (angle - angle_offset);
+
+        // Move the pen...
+        let current_angle = -angle_offset;
+        let point         = this._calculate_point_for_angle(current_angle);
+        ctx.moveTo(this.radius + point.x, this.radius + point.y);
+
+        // Draw the other lines...
+        for(let i = 1; i < segments; ++i) {
+            point = this._calculate_point_for_angle(current_angle);
+            ctx.lineTo(this.radius + point.x, this.radius + point.y);
+
+            current_angle += increment;
+            if(current_angle > target_angle) {
+                current_angle = target_angle;
+                break;
+            }
+        }
+
+        ctx.stroke ();
+        ctx.restore();
+
+        this.sprite.texture.update();
     }
 }
 
@@ -71,20 +113,10 @@ export class Demo_Scene
     {
         super();
 
-        const size = luna.App.get_size();
+        this.curves = null;
+        this.current_angle  = Math.PI;
 
-        const curves_count  = 10;
-        const curves_radius = 10;
-        const curves_size   = curves_radius * 2;
-        const gap           = 10;
-        for(let i = 0; i < curves_count; ++i) {
-            for(let j = 0; j < curves_count; ++j) {
-                const curve = new Curve(curves_radius, i, j);
-                curve.x =curves_radius + (i * curves_size) + (i * gap);
-                curve.y =curves_radius + (j * curves_size) + (j * gap);
-                luna.Layout.add_to_parent(this, curve);
-            }
-        }
+        this._create_curves();
     }
 
     //------------------------------------------------------------------------//
@@ -93,35 +125,41 @@ export class Demo_Scene
     //--------------------------------------------------------------------------
     on_update(dt)
     {
-    }
+        this.current_angle += dt;
+        if(this.current_angle >= luna.TWO_PI) {
+            this.current_angle -= luna.TWO_PI;
+        }
 
-    //--------------------------------------------------------------------------
-    on_resize()
-    {
-        luna.log_verbose(luna.App.get_size());
+        const segments = 30;
+        for(let i = 0; i < this.curves.length; ++i) {
+            const curve = this.curves[i];
+            curve.draw_to_angle(this.current_angle, segments, "red");
+        }
     }
 
     //------------------------------------------------------------------------//
     // Helpers                                                                //
     //------------------------------------------------------------------------//
     //--------------------------------------------------------------------------
-    _setup_graphics()
+    _create_curves()
     {
-        // Create the canvas that we gonna draw...
-        this._buffer_canvas        = document.createElement("canvas");
-        this._buffer_canvas.width  = Demo_Options.FIRE_WIDTH;
-        this._buffer_canvas.height = Demo_Options.FIRE_HEIGHT;
+        const curves_count  = 3;
+        const curves_radius = 80;
+        const curves_size   = curves_radius * 2;
+        const gap           = 10;
 
-        this._buffer_context = this._buffer_canvas.getContext("2d");
+        this.curves = [];
+        for(let i = 0; i < curves_count; ++i) {
+            for(let j = 0; j < curves_count; ++j) {
+                const ratio_1 = i;
+                const ratio_2 = j;
+                const curve = new Curve(curves_radius, ratio_1, ratio_2);
+                curve.x = curves_radius + (i * curves_size) + (i * gap);
+                curve.y = curves_radius + (j * curves_size) + (j * gap);
 
-        // Create a sprite that we can render...
-        const texture = PIXI.Texture.from(this._buffer_canvas);
-
-        this._sprite               = luna.RES.create_sprite_with_texture(texture);
-        this._sprite.cacheAsBitmap = false;
-        this._sprite.width         = luna.App.get_size().width;
-        this._sprite.height        = luna.App.get_size().height;
-
-        luna.Layout.add_to_parent(this, this._sprite);
+                luna.Layout.add_to_parent(this, curve);
+                this.curves.push(curve);
+            }
+        }
     }
 }
