@@ -35,7 +35,7 @@ class Curve
         //
         // Points
         this.radius  = radius;
-        this.size    = radius * 2;
+        this.size    = (radius * 2);
         this.ratio_1 = ratio_1;
         this.ratio_2 = ratio_2;
 
@@ -59,7 +59,7 @@ class Curve
         return point;
     }
 
-   //---------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     draw_to_angle(angle, segments,  stroke_color = "white", stroke_width = 2)
     {
         const ctx = this.canvas_buffer.context_2d;
@@ -68,8 +68,9 @@ class Curve
         ctx.strokeStyle = stroke_color;
         ctx.lineWidth   = stroke_width;
 
-        ctx.fillStyle = "blue";
-        ctx.fillRect(0, 0, this.size, this.size);
+        // ctx.fillStyle = "blue";
+        // ctx.fillRect(0, 0, this.size, this.size);
+        ctx.clearRect(0, 0, this.size, this.size);
         ctx.beginPath();
 
         segments = 360;
@@ -113,8 +114,8 @@ export class Demo_Scene
     {
         super();
 
-        this.curves = null;
-        this.current_angle  = Math.PI;
+        this.curves        = null;
+        this.current_angle = 0;
 
         this._create_curves();
     }
@@ -133,6 +134,11 @@ export class Demo_Scene
         const segments = 30;
         for(let i = 0; i < this.curves.length; ++i) {
             const curve = this.curves[i];
+            const h = luna.Math_Utils.int_mod(
+                (i * 360 / this.curves.length) + luna.Math_Utils.to_degrees(this.current_angle),
+                360
+            );
+
             curve.draw_to_angle(this.current_angle, segments, "red");
         }
     }
@@ -153,6 +159,7 @@ export class Demo_Scene
             for(let j = 0; j < curves_count; ++j) {
                 const ratio_1 = i;
                 const ratio_2 = j;
+
                 const curve = new Curve(curves_radius, ratio_1, ratio_2);
                 curve.x = curves_radius + (i * curves_size) + (i * gap);
                 curve.y = curves_radius + (j * curves_size) + (j * gap);
