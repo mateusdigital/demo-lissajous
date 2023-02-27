@@ -30,6 +30,9 @@ __SOURCES = [
     "/modules/demolib/source/demolib.js",
 ];
 
+
+const background_color = "black";
+
 class Curve
 {
     constructor(radius, ratio_1, ratio_2)
@@ -65,9 +68,9 @@ class Curve
             ctx.strokeStyle = stroke_color;
             ctx.lineWidth   = stroke_width;
 
-            // ctx.fillStyle = "blue";
-            // ctx.fillRect(0, 0, this.size, this.size);
-            ctx.clearRect(0, 0, this.size, this.size);
+            ctx.fillStyle = background_color;
+            ctx.fillRect(0, 0, this.size, this.size);
+
             ctx.beginPath();
 
             segments = 360;
@@ -86,6 +89,7 @@ class Curve
                 ctx.lineTo(this.radius + point.x, this.radius + point.y);
 
                 current_angle += increment;
+                ctx.strokeStyle = stroke_color;
                 if(current_angle > target_angle) {
                     current_angle = target_angle;
                     break;
@@ -106,24 +110,30 @@ class Demo_Scene
     //--------------------------------------------------------------------------
     constructor()
     {
-        this.rows = 10;
-        this.cols = 10;
+        this.restart();
+    }
+
+    restart() {
+        const curve_min_size = random_int(100, 250);
+
+        this.rows = to_int(get_canvas_height() / curve_min_size);
+        this.cols = to_int(get_canvas_width () / curve_min_size);
 
         this.curves        = create_2d_array(this.rows, this.cols);
         this.current_angle = 0;
 
-        this.ratio_1 = 0;
-        this.ratio_2 = 0;
-        this.ratio_1_incr = 0;
-        this.ratio_2_incr = 2;
+        this.ratio_1 = random_float(0, 20);
+        this.ratio_2 = random_float(0, 20);
 
+        this.radius = (curve_min_size * 0.5);
         for(let i = 0; i < this.curves.length; ++i) {
             for(let j = 0; j < this.curves[i].length; ++j) {
-                const ratio_1 = (i + 1);
-                const ratio_2 = (j + 1);
+                this.curves[i][j] = new Curve(
+                    this.radius,
+                    j + this.ratio_1,
+                    i + this.ratio_2
+                );
 
-                const radius = 100;
-                this.curves[i][j] = new Curve(radius, ratio_1, ratio_2);
             }
         }
     }
@@ -142,9 +152,11 @@ class Demo_Scene
             should_restart = true;
         }
 
-        const segments = 30;
-        for(let i = 0; i < this.curves.length; ++i) {
-            for(let j = 0; j < this.curves[i].length; ++j) {
+        let hue     = 0;
+        let hue_inc = 360 / (this.rows * this.cols);
+
+        for(let i = 0; i < this.rows; ++i) {
+            for(let j = 0; j < this.cols; ++j) {
                 const curve = this.curves[i][j];
                 if(!curve) {
                     continue;
@@ -155,13 +167,16 @@ class Demo_Scene
 
                 begin_draw();
                     translate_canvas(x, y);
-                    curve.draw_to_angle(this.current_angle, segments, "red");
+                    const color = chroma.hsl(hue, 1.0, 0.7);
+                    curve.draw_to_angle(this.current_angle, 360, color);
                 end_draw();
+
+                hue += hue_inc;
             }
         }
 
         if(should_restart) {
-            restart();
+            this.restart();
         }
     }
 }
@@ -230,6 +245,7 @@ function demo_main(user_canvas)
 function draw(dt)
 {
     begin_draw();
+        clear_canvas(background_color);
         demo.on_update(dt);
     end_draw();
 }
