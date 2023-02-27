@@ -46,7 +46,7 @@ class Curve
 
         //
         // Graphics
-        this.canvas_buffer = null;
+        this.color = chroma.hsl(random_int(0, 360), 1.0, 0.7);
     }
 
     //--------------------------------------------------------------------------
@@ -61,12 +61,12 @@ class Curve
     }
 
     //--------------------------------------------------------------------------
-    draw_to_angle(angle, segments,  stroke_color = "white", stroke_width = 2)
+    draw_to_angle(angle, segments)
     {
         const ctx = get_main_canvas_context();
         ctx.save();
-            ctx.strokeStyle = stroke_color;
-            ctx.lineWidth   = stroke_width;
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth   = 3;
 
             ctx.fillStyle = background_color;
             ctx.fillRect(0, 0, this.size, this.size);
@@ -89,7 +89,6 @@ class Curve
                 ctx.lineTo(this.radius + point.x, this.radius + point.y);
 
                 current_angle += increment;
-                ctx.strokeStyle = stroke_color;
                 if(current_angle > target_angle) {
                     current_angle = target_angle;
                     break;
@@ -114,10 +113,10 @@ class Demo_Scene
     }
 
     restart() {
-        const curve_min_size = random_int(100, 250);
+        this.curve_min_size = random_int(100, 250);
 
-        this.rows = to_int(get_canvas_height() / curve_min_size);
-        this.cols = to_int(get_canvas_width () / curve_min_size);
+        this.rows = to_int(get_canvas_height() / this.curve_min_size);
+        this.cols = to_int(get_canvas_width () / this.curve_min_size);
 
         this.curves        = create_2d_array(this.rows, this.cols);
         this.current_angle = 0;
@@ -125,7 +124,7 @@ class Demo_Scene
         this.ratio_1 = random_float(0, 20);
         this.ratio_2 = random_float(0, 20);
 
-        this.radius = (curve_min_size * 0.5);
+        this.radius = (this.curve_min_size * 0.5);
         for(let i = 0; i < this.curves.length; ++i) {
             for(let j = 0; j < this.curves[i].length; ++j) {
                 this.curves[i][j] = new Curve(
@@ -136,6 +135,7 @@ class Demo_Scene
 
             }
         }
+
     }
 
     //------------------------------------------------------------------------//
@@ -146,14 +146,14 @@ class Demo_Scene
     {
         let should_restart = false;
 
-        this.current_angle += dt;
+        this.current_angle += dt * 0.6;
         if(this.current_angle >= TWO_PI) {
             this.current_angle -= TWO_PI;
             should_restart = true;
         }
 
-        let hue     = 0;
-        let hue_inc = 360 / (this.rows * this.cols);
+        let padding_x = (get_canvas_width () - (this.cols * this.curve_min_size));
+        let padding_y = (get_canvas_height() - (this.rows * this.curve_min_size));
 
         for(let i = 0; i < this.rows; ++i) {
             for(let j = 0; j < this.cols; ++j) {
@@ -162,16 +162,13 @@ class Demo_Scene
                     continue;
                 }
 
-                const x = j * curve.size;
-                const y = i * curve.size;
+                const x = j * curve.size + padding_x * 0.5;
+                const y = i * curve.size + padding_y * 0.5;
 
                 begin_draw();
                     translate_canvas(x, y);
-                    const color = chroma.hsl(hue, 1.0, 0.7);
-                    curve.draw_to_angle(this.current_angle, 360, color);
+                    curve.draw_to_angle(this.current_angle);
                 end_draw();
-
-                hue += hue_inc;
             }
         }
 
