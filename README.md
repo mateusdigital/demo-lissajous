@@ -1,4 +1,4 @@
-# Roses
+# Lissajous
 
 **Made with <3 by [mateus.digital](https://mateus.digital).**
 
@@ -9,9 +9,9 @@
 
 ## Description:
 
-Roses a creative experience inspired by "[The Coding Train](https://www.youtube.com/watch?v=f5QBExMNB1I&ab_channel=TheCodingTrain)"
+Lissajous a creative experience using [Lissajous Curves](https://en.wikipedia.org/wiki/Lissajous_curve) by [mateus.digital](https://mateus.digital).
 
-You can [check it online](https://mateus.digital/roses).
+You can [check it online](https://mateus.digital/lissajous).
 
 <br>
 
@@ -22,11 +22,12 @@ As usual, you are **very welcomed** to **share** and **hack** it.
 
 
 ```bash
-git clone https://github.com/mateus.digital/roses
-cd roses
+git clone https://github.com/mateus.digital/lissajous
+cd lissajous
 ./scripts/build-static.sh      ## Builds the webpage for the project.
-
 ```
+
+
 ## Thanks to:
 
 - [The Coding Train](https://www.youtube.com/@TheCodingTrain)
