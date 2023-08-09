@@ -22,7 +22,7 @@ As usual, you are **very welcomed** to **share** and **hack** it.
 
 
 ```bash
-git clone https://github.com/mateus.digital/lissajous
+git clone https://github.com/mateusdigital/lissajous
 cd lissajous
 ./scripts/build-static.sh      ## Builds the webpage for the project.
 ```
