@@ -1,0 +1,33 @@
+{
+  "name": "lissajous",
+  "description": "Lissajous is a visual experimentation created by mateus.digital",
+  "version": "2.0.0",
+  "build": 5,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mateusdigital/demo-lissajous.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mateusdigital/demo-lissajous/issues"
+  },
+  "homepage": "https://mateus.digital/projects/lissajous",
+  "keywords": [
+    "lissajous",
+    "perlin-noise",
+    "perlin",
+    "noise",
+    "javascript",
+    "canvas",
+    "retro",
+    "demo",
+    "demoscene",
+    "creative-coding",
+    "mateus.digital"
+  ],
+  "author": {
+    "name": "Mateus Mesquita",
+    "email": "hello@mateus.digital",
+    "url": "https://mateus.digital"
+  },
+  "license": "GPL-3.0-or-later"
+}
